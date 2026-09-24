@@ -3,8 +3,8 @@ import webbrowser
 import threading
 import os
 import datetime
-from core.security import AegisSecurityManager
-from core.monitor import AegisSecurityMonitor
+from security import AegisSecurityManager
+from monitor import AegisSecurityMonitor
 
 app = Flask(__name__)
 app.secret_key = "aegis_secret_key_maule"
