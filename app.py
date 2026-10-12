@@ -1,227 +1,342 @@
-from flask import Flask, jsonify, request, render_template_string
-from flask_cors import CORS
-import jwt
+from flask import Flask, render_template_string, request, redirect, url_for, send_file
+import webbrowser
+import threading
+import os
 import datetime
+from security import AegisSecurityManager
+from monitor import AegisSecurityMonitor
 
 app = Flask(__name__)
-CORS(app)  # Indicador 7: CORS habilitado
+app.secret_key = "aegis_secret_key_maule"
 
-# Clave secreta para JWT (Indicador 4)
-SECRET_KEY = "aegis_secret_key_maule_2026"
+security_manager = AegisSecurityManager()
+security_monitor = AegisSecurityMonitor(threshold=2)
 
-# Base de datos simulada en memoria (recurso principal: Inventario de Productos)
-inventario_db = [
-    {"id": 1, "nombre": "Pan Amasado Artesanal (Kg)", "precio": 2500, "stock": 50},
-    {"id": 2, "nombre": "Queso de Campo Maucho (Kg)", "precio": 8900, "stock": 20},
-    {"id": 3, "nombre": "Vino Pajarete Curicano (750ml)", "precio": 6500, "stock": 15}
-]
+carrito_actual = []
+ultima_boleta_datos = {}
 
-# --- RUTA PRINCIPAL: Interfaz Web con HTML/JS y fetch() (Indicadores 5 y 6) ---
-FRONTEND_HTML = """
+# Interfaz Web Principal (POS + Inventario + Ciberseguridad)
+HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de Inventario — Aegis SecPyME Maule</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis SecPyME Maule - Terminal POS & Seguridad</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; margin: 0; padding: 30px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #cbd5e1; text-align: left; }
-        th { background: #0284c7; color: white; }
-        form { background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #e2e8f0; }
-        input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 5px; }
-        button { background: #0284c7; color: white; font-weight: bold; cursor: pointer; }
-        button:hover { background: #0369a1; }
-        .token-box { background: #ecfdf5; border: 1px solid #10b981; padding: 10px; margin-bottom: 15px; border-radius: 5px; font-size: 14px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #007acc; }
+        .header { background: #007acc; color: white; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 20px; }
+        .layout { display: flex; flex-wrap: wrap; gap: 20px; }
+        .panel { flex: 1; min-width: 300px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+        .card { background: white; border: 2px solid #007acc; border-radius: 6px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .card:hover { background: #eef2f7; transform: translateY(-2px); }
+        .btn { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; text-align: center; text-decoration: none; display: inline-block;}
+        .btn-danger { background: #d9534f; }
+        .btn-primary { background: #007acc; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; font-size: 14px; }
+        th { background-color: #007acc; color: white; }
+        .total-box { background: #e2e8f0; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; font-size: 16px; }
+        select, input { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;}
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📦 Sistema de Inventario — Aegis SecPyME Maule</h1>
-        <p>Panel web interactivo conectado a API REST protegida con JWT.</p>
-
-        <div class="token-box">
-            <b>Estado del Token JWT:</b> <span id="tokenStatus">Obteniendo token de autenticación...</span>
+        <div class="header">
+            <h2>🛡️ AEGIS SECPYME MAULE — CENTRO DE CONTROL DIGITAL Y POS</h2>
+            <p style="margin:0; font-size: 13px;">Solución Integral para Comercios y PyMEs de la Región del Maule</p>
         </div>
 
-        <h2>Listado de Productos en Tiempo Real</h2>
-        <table>
-            <thead>
+        <div class="layout">
+            <!-- PANEL IZQUIERDO: TICKET DE VENTA Y PAGOS -->
+            <div class="panel">
+                <h3>🛒 Ticket de Venta Actual</h3>
+                <table>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cant</th>
+                        <th>Subtotal</th>
+                    </tr>
+                    {% for item in carrito %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.qty }}</td>
+                        <td>${{ item.qty * item.price }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: #777;">El carrito está vacío</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+
+                <div class="total-box">
+                    <div>Subtotal: ${{ subtotal }}</div>
+                    <div>IVA (19%): ${{ tax }}</div>
+                    <div style="color: #28a745; font-size: 18px; margin-top: 5px;">TOTAL: ${{ total }}</div>
+                </div>
+
+                {% if carrito %}
+                <form action="/procesar_pago" method="POST" style="margin-top: 15px;">
+                    <label for="metodo"><b>Seleccione Medio de Pago:</b></label>
+                    <select name="metodo" id="metodo">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta (Débito/Crédito)">Tarjeta (Débito / Crédito)</option>
+                        <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                    </select>
+                    <button type="submit" class="btn">💳 Pagar y Mostrar Boleta en Pantalla</button>
+                </form>
+                <form action="/limpiar_carrito" method="POST">
+                    <button type="submit" class="btn btn-danger" style="margin-top: 5px;">Cancelar Venta</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- PANEL DERECHO: CATÁLOGO TÁCTIL POS -->
+            <div class="panel">
+                <h3>📦 Catálogo Táctil Regional</h3>
+                <p style="font-size: 12px; color: #666;">Haga clic en un producto para agregarlo al ticket:</p>
+                <div class="grid">
+                    {% for prod, info in inventory.items() %}
+                    <form action="/agregar" method="POST">
+                        <input type="hidden" name="producto" value="{{ prod }}">
+                        <button type="submit" class="card" style="width: 100%;">
+                            <b>{{ prod }}</b><br>
+                            <span style="color: #007acc; font-weight: bold;">${{ info['precio'] }}</span><br>
+                            <small>Stock: {{ info['stock'] }}</small>
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN INVENTARIO Y REPOSICIÓN -->
+        <div class="panel" style="margin-top: 20px;">
+            <h3>📦 Gestión y Reposición de Inventario PyME</h3>
+            <table>
                 <tr>
-                    <th>ID</th>
-                    <th>Nombre del Producto</th>
-                    <th>Precio ($ CLP)</th>
+                    <th>Producto Regional</th>
                     <th>Stock Actual</th>
+                    <th>Precio Unitario</th>
+                    <th>Acción</th>
                 </tr>
-            </thead>
-            <tbody id="tablaProductos">
-                <!-- Datos cargados dinámicamente con fetch() -->
-            </tbody>
-        </table>
+                {% for prod, info in inventory.items() %}
+                <tr>
+                    <td><b>{{ prod }}</b></td>
+                    <td>{{ info['stock'] }}</td>
+                    <td>${{ info['precio'] }}</td>
+                    <td>
+                        <form action="/reponer" method="POST" style="display:inline; margin:0;">
+                            <input type="hidden" name="producto" value="{{ prod }}">
+                            <input type="number" name="cantidad" value="15" min="1" max="500" style="width: 60px; display:inline; padding: 4px;">
+                            <button type="submit" class="btn-primary" style="padding: 5px 10px; border:none; border-radius:4px; color:white; cursor:pointer;">Reponer</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
 
-        <h2>Registrar Nuevo Producto (Protegido por JWT)</h2>
-        <form id="productForm">
-            <input type="text" id="nombre" placeholder="Nombre del producto" required>
-            <input type="number" id="precio" placeholder="Precio ($ CLP)" required>
-            <input type="number" id="stock" placeholder="Stock inicial" required>
-            <button type="submit">Agregar al Inventario</button>
-        </form>
+            <h4 style="margin-top: 20px;">➕ Incorporar Nuevo Producto al Sistema</h4>
+            <form action="/nuevo_producto" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" name="nombre" placeholder="Nombre del producto" required style="flex: 2; margin:0;">
+                <input type="number" name="stock" placeholder="Stock inicial" required style="flex: 1; margin:0;">
+                <input type="number" name="precio" placeholder="Precio ($)" required style="flex: 1; margin:0;">
+                <button type="submit" class="btn" style="flex: 1; margin:0; padding: 8px;">Registrar Producto</button>
+            </form>
+        </div>
+
+        <!-- SECCIÓN CIBERSEGURIDAD -->
+        <div class="panel" style="margin-top: 20px; border-color: #d9534f;">
+            <h3 style="color: #d9534f;">🔒 Monitoreo Proactivo y Seguridad (AEGIS Vanguard)</h3>
+            <p style="font-size: 13px;">{{ seguridad_msg }}</p>
+            <a href="/escanear" class="btn btn-danger" style="display: inline-block; width: auto; margin-right: 10px;">🔍 Ejecutar Escaneo de Anomalías</a>
+            <a href="/exportar_reporte" class="btn btn-primary" style="display: inline-block; width: auto;">📄 Descargar Reporte Ejecutivo (.txt)</a>
+        </div>
     </div>
+</body>
+</html>
+"""
 
-    <script>
-        let jwtToken = "";
-
-        // 1. Obtener Token JWT automáticamente al cargar la página
-        async function obtenerToken() {
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({usuario: "admin_aegis", password: "123"})
-                });
-                const data = await response.json();
-                jwtToken = data.token;
-                document.getElementById("tokenStatus").innerText = "Token JWT activo y verificado ✅";
-            } catch (error) {
-                document.getElementById("tokenStatus").innerText = "Error al obtener token ❌";
-            }
+# Plantilla HTML Boleta Estilo Voucher Detallado en Pantalla con opción de Impresión
+BOLETA_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Boleta Electrónica - Aegis SecPyME Maule</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .voucher { background: white; padding: 30px; width: 340px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        h2, h3, p { text-align: center; margin: 6px 0; }
+        .line { border-bottom: 1px dashed #333; margin: 12px 0; }
+        table { width: 100%; font-size: 13px; }
+        th, td { padding: 4px; text-align: left; }
+        .totals { margin-top: 12px; font-size: 14px; }
+        .btn-print { background: #28a745; color: white; border: none; padding: 12px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 15px; font-size: 14px; }
+        .btn-print:hover { background: #218838; }
+        .btn-back { background: #007acc; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 8px; text-decoration: none; display: block; text-align: center; box-sizing: border-box;}
+        .btn-back:hover { background: #0056b3; }
+        @media print {
+            body { background: white; }
+            .btn-print, .btn-back { display: none; }
+            .voucher { box-shadow: none; width: 100%; padding: 0; }
         }
-
-        // 2. Cargar productos usando fetch() (Indicador 5)
-        async function cargarInventario() {
-            try {
-                const response = await fetch('/api/productos');
-                const productos = await response.json();
-                const tbody = document.getElementById("tablaProductos");
-                tbody.innerHTML = "";
-                productos.forEach(p => {
-                    tbody.innerHTML += `<tr>
-                        <td>${p.id}</td>
-                        <td>${p.nombre}</td>
-                        <td>$${p.precio.toLocaleString()}</td>
-                        <td>${p.stock} un.</td>
-                    </tr>`;
-                });
-            } catch (error) {
-                console.error("Error al cargar inventario:", error);
-            }
-        }
-
-        // 3. Enviar nuevo producto con formulario (Indicador 6)
-        document.getElementById("productForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const nuevoProducto = {
-                nombre: document.getElementById("nombre").value,
-                precio: Number(document.getElementById("precio").value),
-                stock: Number(document.getElementById("stock").value)
-            };
-
-            const response = await fetch('/api/productos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + jwtToken // Indicador 4: Envío de JWT
-                },
-                body: JSON.stringify(nuevoProducto)
-            });
-
-            if (response.ok) {
-                document.getElementById("productForm").reset();
-                cargarInventario(); // Actualiza la lista sin recargar la página
-            } else {
-                alert("Error al registrar producto (Verifique datos / Validación 400).");
-            }
-        });
-
-        // Inicializar al cargar
-        window.onload = async () => {
-            await obtenerToken();
-            cargarInventario();
-        };
-    </script>
+    </style>
+</head>
+<body>
+    <div class="voucher">
+        <h2>🛡️ AEGIS SECPYME MAULE</h2>
+        <p><b>Comercio Seguro Regional</b></p>
+        <p><small>Fecha: {{ fecha }}</small></p>
+        <p><small>Medio de Pago: <b>{{ metodo }}</b></small></p>
+        <div class="line"></div>
+        <table>
+            <tr><th>Cant</th><th>Producto</th><th>Total</th></tr>
+            {% for item in carrito %}
+            <tr>
+                <td>{{ item.qty }}x</td>
+                <td>{{ item.name }}</td>
+                <td>${{ item.qty * item.price }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <div class="line"></div>
+        <div class="totals">
+            <p>Subtotal: ${{ subtotal }}</p>
+            <p>IVA (19%): ${{ tax }}</p>
+            <p style="font-size: 16px; font-weight: bold;">TOTAL: ${{ total }}</p>
+        </div>
+        <div class="line"></div>
+        <p><small>¡Gracias por su compra local!<br>Transacción blindada por Aegis Vanguard Security</small></p>
+        
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar Voucher</button>
+        <a href="/" class="btn-back">⬅️ Volver al Terminal POS</a>
+    </div>
 </body>
 </html>
 """
 
 @app.route("/")
 def index():
-    return render_template_string(FRONTEND_HTML)
-
-# --- RUTA DE AUTENTICACIÓN (Generación de Token JWT) ---
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    if data and data.get("usuario") == "admin_aegis" and data.get("password") == "123":
-        token = jwt.encode({
-            'user': data["usuario"],
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-        }, SECRET_KEY, algorithm="HS256")
-        return jsonify({"token": token})
-    return jsonify({"error": "Credenciales inválidas"}), 401
-
-# --- API REST: ENDPOINTS CRUD (Indicador 1 y 2) ---
-
-# 1. Listar todos los productos (GET)
-@app.route('/api/productos', methods=['GET'])
-def listar_productos():
-    return jsonify(inventario_db), 200
-
-# 2. Listar un producto por ID (GET)
-@app.route('/api/productos/<int:id>', methods=['GET'])
-def obtener_producto(id):
-    producto = next((p for p in inventario_db if p["id"] == id), None)
-    if not producto:
-        return jsonify({"error": "Producto no encontrado"}), 404
-    return jsonify(producto), 200
-
-# 3. Crear producto con validación estricta y protección JWT (Indicadores 3 y 4)
-@app.route('/api/productos', methods=['POST'])
-def crear_producto():
-    # Validación de Autenticación JWT
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith('Bearer '):
-        return jsonify({"error": "Token JWT ausente o inválido"}), 401
+    subtotal = sum(item['qty'] * item['price'] for item in carrito_actual)
+    tax = int(subtotal * 0.19)
+    total = subtotal + tax
+    _, msg = security_monitor.analizar_alertas_logs()
     
-    token = auth_header.split(" ")[1]
-    try:
-        jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        return jsonify({"error": "Token expirado"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"error": "Token inválido"}), 401
+    return render_template_string(
+        HTML_TEMPLATE, 
+        inventory=security_manager.inventory,
+        carrito=carrito_actual,
+        subtotal=subtotal,
+        tax=tax,
+        total=total,
+        seguridad_msg=msg
+    )
 
-    # Recepción y Validación de Datos (Indicador 3: Status 400 ante datos inválidos)
-    data = request.get_json()
-    if not data or not data.get("nombre") or data.get("precio", 0) <= 0 or data.get("stock", -1) < 0:
-        return jsonify({"error": "Datos inválidos: nombre requerido, precio > 0 y stock >= 0"}), 400
+@app.route("/agregar", methods=["POST"])
+def agregar():
+    producto = request.form.get("producto")
+    if producto in security_manager.inventory:
+        stock_disponible = security_manager.inventory[producto]["stock"]
+        precio = security_manager.inventory[producto]["precio"]
+        
+        found = False
+        for item in carrito_actual:
+            if item["name"] == producto:
+                if item["qty"] < stock_disponible:
+                    item["qty"] += 1
+                found = True
+                break
+        if not found:
+            if stock_disponible > 0:
+                carrito_actual.append({"name": producto, "qty": 1, "price": precio})
+    return redirect(url_for("index"))
 
-    nuevo_id = max([p["id"] for p in inventario_db], default=0) + 1
-    nuevo_producto = {
-        "id": nuevo_id,
-        "nombre": data["nombre"],
-        "precio": data["precio"],
-        "stock": data["stock"]
+@app.route("/limpiar_carrito", methods=["POST"])
+def limpiar_carrito():
+    carrito_actual.clear()
+    return redirect(url_for("index"))
+
+@app.route("/procesar_pago", methods=["POST"])
+def procesar_pago():
+    global ultima_boleta_datos
+    if not carrito_actual:
+        return redirect(url_for("index"))
+    
+    metodo = request.form.get("metodo", "Efectivo")
+    subtotal = sum(item['qty'] * item['price'] for item in carrito_actual)
+    tax = int(subtotal * 0.19)
+    total = subtotal + tax
+    
+    # Descontar stock real
+    for item in carrito_actual:
+        if item["name"] in security_manager.inventory:
+            security_manager.inventory[item["name"]]["stock"] -= item["qty"]
+
+    # Almacenar en memoria para renderizar en pantalla
+    ultima_boleta_datos = {
+        "carrito": list(carrito_actual),
+        "metodo": metodo,
+        "subtotal": subtotal,
+        "tax": tax,
+        "total": total,
+        "fecha": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
-    inventario_db.append(nuevo_producto)
-    return jsonify(nuevo_producto), 201
+    
+    carrito_actual.clear()
+    
+    # Redirige explícitamente a la ruta que muestra la boleta en pantalla
+    return redirect(url_for("ver_boleta"))
 
-# 4. Actualizar producto (PUT)
-@app.route('/api/productos/<int:id>', methods=['PUT'])
-def actualizar_producto(id):
-    producto = next((p for p in inventario_db if p["id"] == id), None)
-    if not producto:
-        return jsonify({"error": "Producto no encontrado"}), 404
+@app.route("/ver_boleta")
+def ver_boleta():
+    if not ultima_boleta_datos:
+        return redirect(url_for("index"))
+    return render_template_string(BOLETA_TEMPLATE, **ultima_boleta_datos)
 
-    data = request.get_json()
-    if not data or data.get("precio", 0) <= 0 or data.get("stock", -1) < 0:
-        return jsonify({"error": "Datos de actualización inválidos"}), 400
+@app.route("/reponer", methods=["POST"])
+def reponer():
+    producto = request.form.get("producto")
+    try:
+        cantidad = int(request.form.get("cantidad", 15))
+    except ValueError:
+        cantidad = 15
+    security_manager.gestionar_inventario("Administrador", producto, cantidad)
+    return redirect(url_for("index"))
 
-    producto["nombre"] = data.get("nombre", producto["nombre"])
-    producto["precio"] = data.get("precio", producto["precio"])
-    producto["stock"] = data.get("stock", producto["stock"])
-    return jsonify(producto), 200
+@app.route("/nuevo_producto", methods=["POST"])
+def nuevo_producto():
+    nombre = request.form.get("nombre")
+    try:
+        stock = int(request.form.get("stock", 10))
+        precio = int(request.form.get("precio", 1000))
+    except ValueError:
+        stock, precio = 10, 1000
+    security_manager.agregar_nuevo_producto("Administrador", nombre, stock, precio)
+    return redirect(url_for("index"))
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.route("/escanear")
+def escanear():
+    _, msg = security_monitor.analizar_alertas_logs()
+    return f"<script>alert('{msg}'); window.location.href='/';</script>"
+
+@app.route("/exportar_reporte")
+def exportar_reporte():
+    exito, path = security_manager.exportar_reporte_ejecutivo()
+    if exito:
+        return send_file(path, as_attachment=True)
+    return "Error al generar reporte", 500
+
+if __name__ == "__main__":
+    # Abre el navegador automáticamente en un hilo separado al iniciar
+    def abrir_navegador():
+        webbrowser.open("http://127.0.0.1:5000")
+
+    threading.Timer(1.0, abrir_navegador).start()
+    
+    # Inicia el servidor web local
+    app.run(host="127.0.0.1", port=5000, debug=False)
