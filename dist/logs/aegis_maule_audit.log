@@ -1,0 +1,23 @@
+[2026-09-24 19:14:20] [INFO] - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2026-09-24 19:14:20] [INFO] - [33mPress CTRL+C to quit[0m
+[2026-09-24 19:14:25] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:25] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:14:44] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:44] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:14:44] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:44] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:14:44] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:44] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:14:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:45] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:14:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:45] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:14:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:45] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:14:47] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:47] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:14:47] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:47] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:14:48] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:48] "[32mPOST /procesar_pago HTTP/1.1[0m" 302 -
+[2026-09-24 19:14:48] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:14:48] "GET /ver_boleta HTTP/1.1" 200 -
+[2026-09-24 19:15:10] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:15:10] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:24:59] [INFO] - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2026-09-24 19:24:59] [INFO] - [33mPress CTRL+C to quit[0m
+[2026-09-24 19:25:03] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:25:03] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:33:32] [INFO] - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2026-09-24 19:33:32] [INFO] - [33mPress CTRL+C to quit[0m
+[2026-09-24 19:33:35] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:33:35] "GET / HTTP/1.1" 200 -

@@ -1,0 +1,16 @@
+====================================================
+          AEGIS SECPYME MAULE - BOLETA DE VENTA     
+====================================================
+Fecha de Emisión: 2026-09-24 18:46:33
+Método de Pago:   Efectivo
+----------------------------------------------------
+PRODUCTO             | CANT  | SUBTOTAL  
+----------------------------------------------------
+Vino Artesanal       | 4     | $24000    
+----------------------------------------------------
+Subtotal:        $24000
+IVA (19%):       $4560
+TOTAL GENERAL:   $28560
+====================================================
+ ¡Gracias por preferir el comercio local del Maule!
+ Transacción segura blindada por Aegis Vanguard Security

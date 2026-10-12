@@ -1,0 +1,19 @@
+====================================================
+          AEGIS SECPYME MAULE - BOLETA DE VENTA     
+====================================================
+Fecha de Emisión: 2026-09-24 18:46:20
+Método de Pago:   Tarjeta (Débito / Crédito)
+----------------------------------------------------
+PRODUCTO             | CANT  | SUBTOTAL  
+----------------------------------------------------
+Pan Amasado          | 1     | $1200     
+Vino Artesanal       | 4     | $24000    
+Mote con Huesillo    | 4     | $6000     
+Chicha de Curicó     | 3     | $10500    
+----------------------------------------------------
+Subtotal:        $41700
+IVA (19%):       $7923
+TOTAL GENERAL:   $49623
+====================================================
+ ¡Gracias por preferir el comercio local del Maule!
+ Transacción segura blindada por Aegis Vanguard Security

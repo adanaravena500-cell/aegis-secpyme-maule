@@ -1,0 +1,21 @@
+====================================================
+       AEGIS SECPYME MAULE - REPORTE EJECUTIVO      
+====================================================
+Fecha de Generación: 2026-09-24 18:39:52
+
+--- 1. ESTADO ACTUAL DE INVENTARIO Y PRECIOS ---
+• Pan Amasado: 49 unidades | Precio: $1200
+• Queso de Fundo: 17 unidades | Precio: $4500
+• Vino Artesanal: 15 unidades | Precio: $6000
+• Empanada de Pino: 28 unidades | Precio: $2000
+• Mote con Huesillo: 23 unidades | Precio: $1500
+• Chicha de Curicó: 16 unidades | Precio: $3500
+
+--- 2. REGISTRO DE AUDITORÍA Y SEGURIDAD (LOGS) ---
+[2026-09-24 15:10:24] [WARNING] - ALERTA DE SEGURIDAD [Aegis SecPyME Maule]: Acceso fallido para ''
+[2026-09-24 15:13:16] [INFO] - �xito de autenticaci�n [Aegis SecPyME Maule]: 'admin_maule' (Rol: Administrador)
+[2026-09-24 15:15:45] [INFO] - Inventario actualizado: 'Pan Amasado' modificado en 15. Rol: Administrador
+[2026-09-24 18:38:31] [INFO] - Éxito de autenticación [Aegis SecPyME Maule]: 'admin_maule' (Rol: Administrador)
+
+====================================================
+Fin del reporte - Generado por Aegis Vanguard Security

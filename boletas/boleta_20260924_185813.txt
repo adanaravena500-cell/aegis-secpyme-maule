@@ -1,0 +1,16 @@
+====================================================
+          AEGIS SECPYME MAULE - BOLETA DE VENTA     
+====================================================
+Fecha de Emisión: 2026-09-24 18:58:13
+Método de Pago:   Efectivo
+----------------------------------------------------
+PRODUCTO             | CANT  | SUBTOTAL  
+----------------------------------------------------
+Mote con Huesillo    | 4     | $6000     
+----------------------------------------------------
+Subtotal:        $6000
+IVA (19%):       $1140
+TOTAL GENERAL:   $7140
+====================================================
+ ¡Gracias por preferir el comercio local del Maule!
+ Transacción segura blindada por Aegis Vanguard Security

@@ -1,0 +1,58 @@
+====================================================
+       AEGIS SECPYME MAULE - REPORTE EJECUTIVO      
+====================================================
+Fecha: 2026-09-24 19:06:42
+
+--- 1. INVENTARIO Y PRECIOS ACTUALES ---
+• Pan Amasado: 44 unidades | Precio: $1200
+• Queso de Fundo: 20 unidades | Precio: $4500
+• Vino Artesanal: 15 unidades | Precio: $6000
+• Empanada de Pino: 28 unidades | Precio: $2000
+• Mote con Huesillo: 25 unidades | Precio: $1500
+• Chicha de Curicó: 18 unidades | Precio: $3500
+
+--- 2. LOGS DE AUDITORÍA Y SEGURIDAD ---
+[2026-09-24 15:10:24] [WARNING] - ALERTA DE SEGURIDAD [Aegis SecPyME Maule]: Acceso fallido para ''
+[2026-09-24 15:13:16] [INFO] - �xito de autenticaci�n [Aegis SecPyME Maule]: 'admin_maule' (Rol: Administrador)
+[2026-09-24 15:15:45] [INFO] - Inventario actualizado: 'Pan Amasado' modificado en 15. Rol: Administrador
+[2026-09-24 18:38:31] [INFO] - Éxito de autenticación [Aegis SecPyME Maule]: 'admin_maule' (Rol: Administrador)
+[2026-09-24 18:39:52] [INFO] - Reporte ejecutivo exportado exitosamente.
+[2026-09-24 18:45:53] [INFO] - Éxito de autenticación [Aegis SecPyME Maule]: 'admin_maule' (Rol: Administrador)
+[2026-09-24 18:46:20] [INFO] - Boleta electrónica generada: boletas\boleta_20260924_184620.txt (Pago: Tarjeta (Débito / Crédito))
+[2026-09-24 18:46:33] [INFO] - Boleta electrónica generada: boletas\boleta_20260924_184633.txt (Pago: Efectivo)
+[2026-09-24 18:57:46] [INFO] - Éxito de autenticación [Aegis SecPyME Maule]: 'admin_maule' (Rol: Administrador)
+[2026-09-24 18:57:54] [INFO] - Boleta electrónica generada: boletas\boleta_20260924_185754.txt (Pago: Efectivo)
+[2026-09-24 18:58:13] [INFO] - Boleta electrónica generada: boletas\boleta_20260924_185813.txt (Pago: Efectivo)
+[2026-09-24 19:02:25] [INFO] - Éxito de autenticación [Aegis SecPyME Maule]: 'admin_maule' (Rol: Administrador)
+[2026-09-24 19:02:39] [INFO] - Boleta electrónica generada: boletas\boleta_20260924_190239.txt (Pago: Efectivo)
+[2026-09-24 19:02:53] [INFO] - Boleta electrónica generada: boletas\boleta_20260924_190253.txt (Pago: Efectivo)
+[2026-09-24 19:04:53] [INFO] - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.223.197:5000
+[2026-09-24 19:04:53] [INFO] - [33mPress CTRL+C to quit[0m
+[2026-09-24 19:04:53] [INFO] -  * Restarting with stat
+[2026-09-24 19:04:55] [WARNING] -  * Debugger is active!
+[2026-09-24 19:04:55] [INFO] -  * Debugger PIN: 121-729-555
+[2026-09-24 19:05:23] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:23] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:34] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:34] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+[2026-09-24 19:05:42] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:42] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:43] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:43] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:43] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:43] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:43] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:43] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:44] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:44] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:45] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:45] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:45] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:45] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:45] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:45] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:46] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:46] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:48] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:48] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:48] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:48] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:49] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:49] "[32mPOST /agregar HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:49] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:49] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:05:51] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:51] "[32mPOST /procesar_pago HTTP/1.1[0m" 302 -
+[2026-09-24 19:05:51] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:05:51] "GET /ver_boleta HTTP/1.1" 200 -
+[2026-09-24 19:06:12] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:06:12] "GET / HTTP/1.1" 200 -
+[2026-09-24 19:06:31] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:06:31] "GET /escanear HTTP/1.1" 200 -
+[2026-09-24 19:06:39] [INFO] - 127.0.0.1 - - [24/Sep/2026 19:06:39] "GET / HTTP/1.1" 200 -
